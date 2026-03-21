@@ -17,11 +17,11 @@ from sdg4llm_bench.config import (
     TrainingConfig,
 )
 
-# Re-export seed corpus public API
-from sdg4llm_bench.seed_corpus import load_all_seeds, load_mixed_seeds, load_seed
-
 # Re-export leaderboard public API
 from sdg4llm_bench.leaderboard import build_submission_from_eval
+
+# Re-export seed corpus public API
+from sdg4llm_bench.seed_corpus import load_all_seeds, load_mixed_seeds, load_seed
 
 __all__ = [
     "__version__",
