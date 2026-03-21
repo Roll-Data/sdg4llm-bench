@@ -1,0 +1,122 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Roll-Data/sdg4llm-bench/blob/main/results/schema.json",
+  "title": "SDG4LLM-Bench Submission",
+  "description": "Schema for official SDG4LLM-Bench leaderboard submissions. The composite unique key is (method_name, teacher_model).",
+  "type": "object",
+  "required": [
+    "method_name",
+    "teacher_model",
+    "method_description",
+    "authors",
+    "task_results",
+    "num_samples",
+    "track",
+    "timestamp",
+    "canonical"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "method_name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Name of the SDG technique (e.g. 'Evol-Instruct', 'Self-Instruct', 'WRAP'). Part of composite unique key."
+    },
+    "teacher_model": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Model used to generate the synthetic data (e.g. 'gpt-4o', 'meta-llama/Llama-3.1-70B-Instruct'). Required — submissions without this are rejected. Part of composite unique key."
+    },
+    "method_description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Brief description of the SDG method."
+    },
+    "authors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "description": "List of submission authors."
+    },
+    "task_results": {
+      "type": "object",
+      "description": "Per-task evaluation results. All four canonical tasks must be present.",
+      "required": ["ifeval", "gsm8k", "humaneval_plus", "bbh"],
+      "additionalProperties": false,
+      "properties": {
+        "ifeval": { "$ref": "#/$defs/task_result" },
+        "gsm8k": { "$ref": "#/$defs/task_result" },
+        "humaneval_plus": { "$ref": "#/$defs/task_result" },
+        "bbh": { "$ref": "#/$defs/task_result" }
+      }
+    },
+    "num_samples": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 40000,
+      "description": "Number of synthetic training samples used. Max 40,000 for primary track, 5,000 for low-resource track."
+    },
+    "track": {
+      "type": "string",
+      "enum": ["primary", "low_resource"],
+      "description": "Leaderboard track. Submissions with num_samples <= 5000 are eligible for both tracks."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of submission generation."
+    },
+    "canonical": {
+      "type": "boolean",
+      "description": "Whether this run used the locked canonical config. Must be true for official leaderboard eligibility."
+    },
+    "geo_mean_delta": {
+      "type": ["number", "null"],
+      "description": "Geometric mean of per-task deltas. Computed automatically; set to null or 0.0 if not qualified."
+    },
+    "qualified": {
+      "type": "boolean",
+      "description": "Whether all four task deltas are strictly positive. Computed automatically."
+    },
+    "repo_url": {
+      "type": ["string", "null"],
+      "format": "uri",
+      "description": "Optional URL to the code repository for the SDG method."
+    },
+    "paper_url": {
+      "type": ["string", "null"],
+      "format": "uri",
+      "description": "Optional URL to the associated paper."
+    }
+  },
+  "$defs": {
+    "task_result": {
+      "type": "object",
+      "required": ["task", "baseline_score", "sdg_score", "delta"],
+      "additionalProperties": false,
+      "properties": {
+        "task": {
+          "type": "string",
+          "description": "Task name."
+        },
+        "baseline_score": {
+          "type": ["number", "null"],
+          "description": "Published seed-only baseline score for this task."
+        },
+        "sdg_score": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Score achieved by the submitter's SDG-trained model."
+        },
+        "delta": {
+          "type": "number",
+          "description": "sdg_score - baseline_score. Must be strictly positive for qualification."
+        }
+      }
+    }
+  }
+}

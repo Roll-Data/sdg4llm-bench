@@ -205,3 +205,24 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# ─── SDG4LLM-Bench project-specific ─────────────────────────────────────────
+
+# Training run outputs (checkpoints, eval results, meta.json) — can be large
+runs/
+
+# Local seed corpus builds (from scripts/build_seed_corpus.py --output-dir)
+seed_corpus_local/
+
+# Model weight files — should never be committed
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.gguf
+
+# Weights & Biases experiment tracking
+wandb/
+
+# HuggingFace datasets/model cache (if someone points HF_HOME into the repo)
+.cache/

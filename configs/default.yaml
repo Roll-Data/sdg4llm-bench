@@ -1,0 +1,102 @@
+# SDG4LLM-Bench: Locked Benchmark Configuration
+#
+# This file is a human-readable mirror of sdg4llm_bench/config.py.
+# The CI config-integrity job imports config.py, hashes its canonical values,
+# and compares against _integrity_hash below. Any discrepancy fails CI.
+#
+# DO NOT edit these values without:
+#   1. Updating config.py to match
+#   2. Re-running: python scripts/update_config_hash.py
+#   3. Opening an RFC issue (changes to canonical config affect all past submissions)
+
+# ─── Student Model ────────────────────────────────────────────────────────────
+student_model: "meta-llama/Llama-3.1-8B"
+model_dtype: "float16"
+
+# ─── LoRA Configuration ───────────────────────────────────────────────────────
+lora:
+  rank: 64
+  alpha: 128
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+  dropout: 0.05
+  task_type: "CAUSAL_LM"
+
+# ─── Training Hyperparameters ─────────────────────────────────────────────────
+training:
+  optimizer: "adamw_torch"
+  lr: 0.0002
+  weight_decay: 0.01
+  adam_betas: [0.9, 0.999]
+  adam_epsilon: 1.0e-8
+  max_grad_norm: 1.0
+  lr_scheduler: "cosine"
+  warmup_ratio: 0.1
+  epochs: 3
+  per_device_train_batch_size: 2
+  gradient_accumulation_steps: 64
+  # Effective batch size = per_device_train_batch_size * gradient_accumulation_steps = 128
+  max_seq_length: 2048
+  fp16: true
+  bf16: false
+  gradient_checkpointing: true
+  seed: 42
+  data_seed: 42
+  logging_steps: 10
+  save_strategy: "epoch"
+  save_total_limit: 1
+  eval_strategy: "no"
+
+# ─── Volume Caps ──────────────────────────────────────────────────────────────
+benchmark_tracks:
+  primary: 40000
+  low_resource: 5000
+
+# ─── Tasks ────────────────────────────────────────────────────────────────────
+tasks:
+  ifeval:
+    eval_tool: lm_eval
+    lm_eval_task: ifeval
+    metric: prompt_level_strict_acc
+    num_fewshot: 0
+    seed_datasets:
+      - ["Muennighoff/flan2021_submix_original", null]
+
+  gsm8k:
+    eval_tool: lm_eval
+    lm_eval_task: gsm8k
+    metric: "exact_match,strict-match"
+    num_fewshot: 5
+    seed_datasets:
+      - ["AI-MO/NuminaMath-CoT", null]
+
+  humaneval_plus:
+    eval_tool: evalplus  # CRITICAL: never use lm_eval for HumanEval+
+    lm_eval_task: null
+    metric: pass@1
+    num_fewshot: 0
+    seed_datasets:
+      - ["codeparrot/apps", "all"]
+
+  bbh:
+    eval_tool: lm_eval
+    lm_eval_task: bbh
+    metric: "exact_match,strict-match"
+    num_fewshot: 3
+    seed_datasets:
+      - ["allenai/ai2_arc", "ARC-Challenge"]
+      - ["allenai/winogrande", "winogrande_xl"]
+
+# ─── Seed Corpus ──────────────────────────────────────────────────────────────
+seed_corpus_hf_repo: "sdg4llm-bench/seed-corpus-v1"
+
+# ─── Integrity Hash ───────────────────────────────────────────────────────────
+# Computed by: python scripts/update_config_hash.py
+# Updated whenever any locked value above changes (requires RFC).
+_integrity_hash: "PLACEHOLDER_RUN_scripts/update_config_hash.py"

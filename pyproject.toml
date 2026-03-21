@@ -1,0 +1,75 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sdg4llm-bench"
+version = "0.1.0"
+description = "Standardized benchmark for evaluating synthetic data generation methods for LLM training"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "SDG4LLM-Bench Contributors" },
+]
+keywords = ["llm", "synthetic-data", "benchmark", "fine-tuning", "evaluation"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "torch>=2.1.0",
+    "transformers>=4.40.0",
+    "datasets>=2.18.0",
+    "accelerate>=0.28.0",
+    "peft>=0.10.0",
+    "lm-eval>=0.4.0",
+]
+
+[project.optional-dependencies]
+evalplus = ["evalplus>=0.3.0"]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.4.0",
+]
+all = [
+    "evalplus>=0.3.0",
+    "pytest>=8.0",
+    "ruff>=0.4.0",
+    "huggingface-hub>=0.20.0",
+    "PyYAML>=6.0",
+    "jsonschema>=4.0",
+]
+
+[project.scripts]
+sdg4llm-train = "sdg4llm_bench.train:main"
+sdg4llm-eval = "sdg4llm_bench.evaluate:main"
+
+[project.urls]
+Homepage = "https://github.com/Roll-Data/sdg4llm-bench"
+Repository = "https://github.com/Roll-Data/sdg4llm-bench"
+Issues = "https://github.com/Roll-Data/sdg4llm-bench/issues"
+
+[tool.setuptools.packages.find]
+include = ["sdg4llm_bench*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "integration: marks tests as integration tests (deselect with -m 'not integration')",
+    "gpu: marks tests that require a GPU",
+]

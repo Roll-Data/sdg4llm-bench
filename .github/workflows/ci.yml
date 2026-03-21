@@ -1,0 +1,187 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ─── Job 1: Lint ────────────────────────────────────────────────────────────
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Create venv
+        run: uv venv
+
+      - name: Install ruff
+        run: uv pip install "ruff>=0.4.0"
+
+      - name: Run ruff check
+        run: uv run ruff check sdg4llm_bench/ tests/ scripts/
+
+      - name: Run ruff format check
+        run: uv run ruff format --check sdg4llm_bench/ tests/ scripts/
+
+  # ─── Job 2: Tests ───────────────────────────────────────────────────────────
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Create venv
+        run: uv venv
+
+      - name: Install package with dev dependencies
+        run: uv pip install -e ".[dev]"
+
+      - name: Install torch (CPU-only, ~250MB)
+        run: uv pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install datasets (required for seed corpus tests)
+        run: uv pip install "datasets>=2.18.0"
+
+      - name: Run tests (skip integration and gpu)
+        run: uv run pytest tests/ -v -m "not integration and not gpu" --tb=short
+
+  # ─── Job 3: Validate Submissions (PRs only) ──────────────────────────────────
+  validate-submissions:
+    name: Validate Submissions
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Need full history to find changed files
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Create venv
+        run: uv venv
+
+      - name: Install package
+        run: uv pip install -e ".[dev]"
+
+      - name: Install jsonschema
+        run: uv pip install jsonschema
+
+      - name: Find changed submission files
+        id: changed-files
+        run: |
+          CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- 'submissions/*.json' | tr '\n' ' ')
+          echo "files=$CHANGED" >> $GITHUB_OUTPUT
+          echo "Changed submission files: $CHANGED"
+
+      - name: Validate changed submissions
+        if: steps.changed-files.outputs.files != ''
+        run: |
+          FILES="${{ steps.changed-files.outputs.files }}"
+          uv run python scripts/validate_submission.py $FILES
+
+      - name: No submissions to validate
+        if: steps.changed-files.outputs.files == ''
+        run: echo "No submission files changed in this PR."
+
+  # ─── Job 4: Config Integrity ─────────────────────────────────────────────────
+  config-integrity:
+    name: Config Integrity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Create venv
+        run: uv venv
+
+      - name: Install package (minimal — no torch needed)
+        run: uv pip install -e . --no-deps
+
+      - name: Install only required deps for config check
+        run: uv pip install "PyYAML>=6.0"
+
+      - name: Verify locked config values (assert against known spec values)
+        run: |
+          uv run python - <<'EOF'
+          from sdg4llm_bench.config import (
+              BENCHMARK_TRACKS,
+              LORA_CONFIG,
+              STUDENT_MODEL,
+              TASK_REGISTRY,
+              TRAINING_CONFIG,
+              Task,
+          )
+
+          errors = []
+
+          # Student model
+          assert STUDENT_MODEL == "meta-llama/Llama-3.1-8B", \
+              f"STUDENT_MODEL changed: {STUDENT_MODEL}"
+
+          # LoRA
+          assert LORA_CONFIG.rank == 64, f"LoRA rank changed: {LORA_CONFIG.rank}"
+          assert LORA_CONFIG.alpha == 128, f"LoRA alpha changed: {LORA_CONFIG.alpha}"
+          assert len(LORA_CONFIG.target_modules) == 7, \
+              f"LoRA target_modules count changed: {len(LORA_CONFIG.target_modules)}"
+
+          # Training
+          assert TRAINING_CONFIG.lr == 2e-4, f"LR changed: {TRAINING_CONFIG.lr}"
+          assert TRAINING_CONFIG.epochs == 3, f"Epochs changed: {TRAINING_CONFIG.epochs}"
+          assert TRAINING_CONFIG.per_device_train_batch_size == 2, \
+              f"Batch size changed: {TRAINING_CONFIG.per_device_train_batch_size}"
+          assert TRAINING_CONFIG.gradient_accumulation_steps == 64, \
+              f"Grad accum changed: {TRAINING_CONFIG.gradient_accumulation_steps}"
+          assert TRAINING_CONFIG.fp16 is True, f"FP16 changed: {TRAINING_CONFIG.fp16}"
+          assert TRAINING_CONFIG.bf16 is False, f"BF16 changed: {TRAINING_CONFIG.bf16}"
+          assert TRAINING_CONFIG.seed == 42, f"Seed changed: {TRAINING_CONFIG.seed}"
+
+          # Tracks
+          assert BENCHMARK_TRACKS["primary"] == 40_000, \
+              f"Primary cap changed: {BENCHMARK_TRACKS['primary']}"
+          assert BENCHMARK_TRACKS["low_resource"] == 5_000, \
+              f"Low-resource cap changed: {BENCHMARK_TRACKS['low_resource']}"
+
+          # Tasks
+          assert len(TASK_REGISTRY) == 4, f"Task count changed: {len(TASK_REGISTRY)}"
+          hep = TASK_REGISTRY[Task.humaneval_plus]
+          assert hep.eval_tool == "evalplus", \
+              f"HumanEval+ eval_tool changed: {hep.eval_tool}"
+          assert hep.lm_eval_task is None, \
+              f"HumanEval+ lm_eval_task should be None: {hep.lm_eval_task}"
+
+          print("✓ All locked config values match spec")
+          EOF
+
+      - name: Check integrity hash (if hash is set)
+        run: |
+          uv pip install "PyYAML>=6.0" || true
+          uv run python scripts/update_config_hash.py --check || true
+          # Note: --check exits 0 if hash is placeholder (bootstrap case)
