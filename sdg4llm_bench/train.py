@@ -87,8 +87,7 @@ def _load_jsonl(path: str, max_samples: int | None = None):
     missing = {"instruction", "response"} - set(ds.column_names)
     if missing:
         raise ValueError(
-            f"JSONL file {path!r} is missing required columns: {missing}. "
-            f"Got: {ds.column_names}"
+            f"JSONL file {path!r} is missing required columns: {missing}. Got: {ds.column_names}"
         )
     if max_samples is not None:
         ds = ds.select(range(min(max_samples, len(ds))))
@@ -289,7 +288,8 @@ def train(
         "model": student_model,
         "lora_config": dataclasses.asdict(lora_config),
         "training_config": {
-            k: v for k, v in dataclasses.asdict(training_config).items()
+            k: v
+            for k, v in dataclasses.asdict(training_config).items()
             if k not in ("max_seq_length",)
         },
         "canonical": canonical,

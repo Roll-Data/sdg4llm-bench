@@ -47,9 +47,7 @@ def _build_dataset_card(task_datasets: dict, hf_repo: str) -> str:
     rows = []
     for task, ds in task_datasets.items():
         spec = TASK_REGISTRY[task]
-        seed_sources = ", ".join(
-            repo for repo, _ in spec.seed_datasets
-        )
+        seed_sources = ", ".join(repo for repo, _ in spec.seed_datasets)
         rows.append(f"| {task.value} | {len(ds):,} | {seed_sources} |")
 
     rows_text = "\n".join(rows)
@@ -170,7 +168,9 @@ def main() -> None:
         try:
             import datasets as _datasets_check  # noqa: PLC0415, F401
         except ImportError:
-            print("ERROR: 'datasets' package required for pushing. Install with: uv pip install datasets")
+            print(
+                "ERROR: 'datasets' package required for pushing. Install with: uv pip install datasets"
+            )
             sys.exit(1)
 
         print(f"\nPushing to HuggingFace Hub: {args.hf_repo}")

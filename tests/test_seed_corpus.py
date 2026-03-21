@@ -94,9 +94,17 @@ class TestFormatNuminaMath:
 
 
 class TestFormatApps:
-    def _make_row(self, question="Write a function", solutions=None, input_output=None,
-                  difficulty="introductory", starter_code=""):
-        solutions_str = json.dumps(solutions or ["def solve(): pass"]) if solutions is not False else ""
+    def _make_row(
+        self,
+        question="Write a function",
+        solutions=None,
+        input_output=None,
+        difficulty="introductory",
+        starter_code="",
+    ):
+        solutions_str = (
+            json.dumps(solutions or ["def solve(): pass"]) if solutions is not False else ""
+        )
         io_str = json.dumps(input_output) if input_output else ""
         return {
             "question": question,
@@ -189,10 +197,13 @@ class TestFormatApps:
 
 
 class TestFormatArc:
-    def _make_arc_row(self, question="What is the sky?",
-                      labels=("A", "B", "C", "D"),
-                      texts=("Blue", "Green", "Red", "Yellow"),
-                      answer_key="A"):
+    def _make_arc_row(
+        self,
+        question="What is the sky?",
+        labels=("A", "B", "C", "D"),
+        texts=("Blue", "Green", "Red", "Yellow"),
+        answer_key="A",
+    ):
         return {
             "question": question,
             "choices": {"label": list(labels), "text": list(texts)},

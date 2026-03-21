@@ -144,19 +144,25 @@ class TestEligibleTracks:
 
 class TestComputeScores:
     def test_all_positive_deltas_qualifies(self):
-        sub = _make_submission(deltas={"ifeval": 0.1, "gsm8k": 0.2, "humaneval_plus": 0.05, "bbh": 0.15})
+        sub = _make_submission(
+            deltas={"ifeval": 0.1, "gsm8k": 0.2, "humaneval_plus": 0.05, "bbh": 0.15}
+        )
         sub = compute_scores(sub)
         assert sub.qualified is True
         assert sub.geo_mean_delta > 0
 
     def test_one_negative_delta_disqualifies(self):
-        sub = _make_submission(deltas={"ifeval": 0.1, "gsm8k": -0.01, "humaneval_plus": 0.05, "bbh": 0.15})
+        sub = _make_submission(
+            deltas={"ifeval": 0.1, "gsm8k": -0.01, "humaneval_plus": 0.05, "bbh": 0.15}
+        )
         sub = compute_scores(sub)
         assert sub.qualified is False
         assert sub.geo_mean_delta == 0.0
 
     def test_zero_delta_disqualifies(self):
-        sub = _make_submission(deltas={"ifeval": 0.1, "gsm8k": 0.0, "humaneval_plus": 0.05, "bbh": 0.15})
+        sub = _make_submission(
+            deltas={"ifeval": 0.1, "gsm8k": 0.0, "humaneval_plus": 0.05, "bbh": 0.15}
+        )
         sub = compute_scores(sub)
         assert sub.qualified is False
         assert sub.geo_mean_delta == 0.0
@@ -208,7 +214,9 @@ class TestValidateSubmission:
         assert any("method_name" in e for e in errors)
 
     def test_negative_delta_error(self):
-        sub = _make_submission(deltas={"ifeval": 0.1, "gsm8k": -0.01, "humaneval_plus": 0.05, "bbh": 0.1})
+        sub = _make_submission(
+            deltas={"ifeval": 0.1, "gsm8k": -0.01, "humaneval_plus": 0.05, "bbh": 0.1}
+        )
         errors = validate_submission(sub)
         assert any("gsm8k" in e and "delta" in e for e in errors)
 

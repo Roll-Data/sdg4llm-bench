@@ -36,9 +36,7 @@ def compute_config_hash() -> str:
     canonical_data = {
         "student_model": STUDENT_MODEL,
         "lora": dataclasses.asdict(LORA_CONFIG),
-        "training": {
-            k: v for k, v in dataclasses.asdict(TRAINING_CONFIG).items()
-        },
+        "training": {k: v for k, v in dataclasses.asdict(TRAINING_CONFIG).items()},
         "benchmark_tracks": BENCHMARK_TRACKS,
         "tasks": {
             task.value: {
@@ -73,7 +71,7 @@ def update_stored_hash(new_hash: str) -> None:
     import re  # noqa: PLC0415
 
     new_content = re.sub(
-        r'^_integrity_hash:.*$',
+        r"^_integrity_hash:.*$",
         f'_integrity_hash: "{new_hash}"',
         content,
         flags=re.MULTILINE,
@@ -84,9 +82,7 @@ def update_stored_hash(new_hash: str) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Compute and update the config integrity hash."
-    )
+    parser = argparse.ArgumentParser(description="Compute and update the config integrity hash.")
     parser.add_argument(
         "--check",
         action="store_true",
@@ -100,8 +96,7 @@ def main() -> None:
         stored_hash = get_stored_hash()
         if not stored_hash or stored_hash == "PLACEHOLDER_RUN_scripts/update_config_hash.py":
             print(
-                "WARNING: No integrity hash stored. "
-                "Run: python scripts/update_config_hash.py",
+                "WARNING: No integrity hash stored. Run: python scripts/update_config_hash.py",
                 file=sys.stderr,
             )
             # Don't fail CI if hash was never set (bootstrap case)

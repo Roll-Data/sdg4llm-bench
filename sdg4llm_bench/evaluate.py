@@ -104,12 +104,19 @@ def _run_lm_eval(
         model_args += f",peft={adapter_path}"
 
     cmd = [
-        sys.executable, "-m", "lm_eval",
-        "--model", "hf",
-        "--model_args", model_args,
-        "--tasks", task_spec.lm_eval_task,
-        "--num_fewshot", str(task_spec.num_fewshot),
-        "--output_path", str(results_dir),
+        sys.executable,
+        "-m",
+        "lm_eval",
+        "--model",
+        "hf",
+        "--model_args",
+        model_args,
+        "--tasks",
+        task_spec.lm_eval_task,
+        "--num_fewshot",
+        str(task_spec.num_fewshot),
+        "--output_path",
+        str(results_dir),
         "--log_samples",
     ]
 
@@ -190,12 +197,18 @@ def _run_evalplus(
         model_str = f"{base_model}+{adapter_path}"
 
     gen_cmd = [
-        sys.executable, "-m", "evalplus.evaluate",
-        "--model", model_str,
-        "--dataset", "humaneval",
-        "--backend", "vllm",
+        sys.executable,
+        "-m",
+        "evalplus.evaluate",
+        "--model",
+        model_str,
+        "--dataset",
+        "humaneval",
+        "--backend",
+        "vllm",
         "--greedy",
-        "--output", str(samples_file),
+        "--output",
+        str(samples_file),
     ]
 
     print("  Running EvalPlus for HumanEval+...")
@@ -211,9 +224,13 @@ def _run_evalplus(
 
     # Parse pass@1 from output
     eval_cmd = [
-        sys.executable, "-m", "evalplus.evaluate",
-        "--dataset", "humaneval",
-        "--samples", str(samples_file),
+        sys.executable,
+        "-m",
+        "evalplus.evaluate",
+        "--dataset",
+        "humaneval",
+        "--samples",
+        str(samples_file),
     ]
     eval_result = subprocess.run(eval_cmd, capture_output=True, text=True)
 
@@ -223,6 +240,7 @@ def _run_evalplus(
     if json_results_file.exists():
         try:
             import json as _json  # noqa: PLC0415
+
             with open(json_results_file) as _f:
                 ep_data = _json.load(_f)
             # EvalPlus JSON structure: {"eval": {"HumanEval/<id>": {"base": {"pass@1": float}}}}
@@ -383,9 +401,7 @@ def compute_deltas(
     dict mapping task name -> delta (float)
     """
     if baseline_scores is None:
-        baseline_scores = {
-            k: v.get("score") for k, v in PUBLISHED_BASELINES.items()
-        }
+        baseline_scores = {k: v.get("score") for k, v in PUBLISHED_BASELINES.items()}
 
     deltas = {}
     for task_name, sdg_val in sdg_scores.items():

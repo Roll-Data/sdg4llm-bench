@@ -54,8 +54,17 @@ def validate_file(file_path: str) -> list[str]:
             pass  # jsonschema not installed — skip schema check
 
     # ── Required fields ───────────────────────────────────────────────────────
-    required = ["method_name", "teacher_model", "method_description", "authors",
-                "task_results", "num_samples", "track", "timestamp", "canonical"]
+    required = [
+        "method_name",
+        "teacher_model",
+        "method_description",
+        "authors",
+        "task_results",
+        "num_samples",
+        "track",
+        "timestamp",
+        "canonical",
+    ]
     for field in required:
         if field not in data:
             errors.append(f"Missing required field: '{field}'")

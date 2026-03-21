@@ -255,4 +255,7 @@ class TestToHFTrainingArgs:
             pytest.skip("transformers not installed")
 
         args = TRAINING_CONFIG.to_hf_training_args("/tmp/test_output")
-        assert not hasattr(args, "max_seq_length") or args.max_seq_length != TRAINING_CONFIG.max_seq_length
+        assert (
+            not hasattr(args, "max_seq_length")
+            or args.max_seq_length != TRAINING_CONFIG.max_seq_length
+        )

@@ -229,10 +229,12 @@ class TestTrainValidation:
         from sdg4llm_bench.train import train  # noqa: PLC0415
 
         # Build a fake seed dataset just over the 10K per-task cap.
-        big_ds = Dataset.from_dict({
-            "instruction": ["q"] * (PER_TASK_DIAGNOSTIC_CAP + 1),
-            "response": ["a"] * (PER_TASK_DIAGNOSTIC_CAP + 1),
-        })
+        big_ds = Dataset.from_dict(
+            {
+                "instruction": ["q"] * (PER_TASK_DIAGNOSTIC_CAP + 1),
+                "response": ["a"] * (PER_TASK_DIAGNOSTIC_CAP + 1),
+            }
+        )
 
         with patch("sdg4llm_bench.seed_corpus.load_seed", return_value=big_ds):
             with pytest.raises(ValueError, match="per-task diagnostic cap"):

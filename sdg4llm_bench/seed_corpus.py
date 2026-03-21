@@ -139,9 +139,7 @@ def _format_arc(row: dict) -> dict:
     answer_key = str(row.get("answerKey") or "").strip()
 
     # Build multi-choice prompt
-    choice_lines = "\n".join(
-        f"({label}) {text}" for label, text in zip(labels, texts)
-    )
+    choice_lines = "\n".join(f"({label}) {text}" for label, text in zip(labels, texts))
     instruction = f"{question}\n{choice_lines}"
 
     # Find correct answer text
@@ -229,8 +227,13 @@ def _load_humaneval_seed(max_samples: int | None = None):
     def _format_and_filter(row):
         result = _format_apps(row)
         if result is None:
-            return {"instruction": None, "response": None, "test_cases": None,
-                    "difficulty": None, "starter_code": None}
+            return {
+                "instruction": None,
+                "response": None,
+                "test_cases": None,
+                "difficulty": None,
+                "starter_code": None,
+            }
         return result
 
     ds = ds.map(_format_and_filter, remove_columns=ds.column_names)
@@ -336,7 +339,9 @@ def load_all_seeds(
     dict mapping Task -> datasets.Dataset
     """
     return {
-        task: load_seed(task, max_samples=max_samples, use_published_artifact=use_published_artifact)
+        task: load_seed(
+            task, max_samples=max_samples, use_published_artifact=use_published_artifact
+        )
         for task in TASK_REGISTRY
     }
 
@@ -362,7 +367,9 @@ def load_mixed_seeds(
     """
     from datasets import concatenate_datasets  # noqa: PLC0415
 
-    all_seeds = load_all_seeds(max_samples=max_samples, use_published_artifact=use_published_artifact)
+    all_seeds = load_all_seeds(
+        max_samples=max_samples, use_published_artifact=use_published_artifact
+    )
 
     # Ensure all datasets have the same columns before concatenating.
     # Use the minimal required columns to avoid mismatch.

@@ -150,10 +150,7 @@ def geometric_mean(scores: list) -> float:
     if not scores:
         raise ValueError("Cannot compute geometric mean of empty list")
     if any(s <= 0 for s in scores):
-        raise ValueError(
-            f"Geometric mean requires all strictly positive scores. "
-            f"Got: {scores}"
-        )
+        raise ValueError(f"Geometric mean requires all strictly positive scores. Got: {scores}")
     return math.prod(scores) ** (1.0 / len(scores))
 
 
@@ -229,8 +226,7 @@ def validate_submission(submission: Submission) -> list:
     missing_tasks = required_tasks - present_tasks
     if missing_tasks:
         errors.append(
-            f"Missing task results for: {sorted(missing_tasks)}. "
-            f"All four tasks must be evaluated."
+            f"Missing task results for: {sorted(missing_tasks)}. All four tasks must be evaluated."
         )
 
     # All deltas must be positive (for qualification)
@@ -248,7 +244,10 @@ def validate_submission(submission: Submission) -> list:
             f"num_samples ({submission.num_samples:,}) exceeds the primary track cap "
             f"({BENCHMARK_TRACKS['primary']:,}). Trim your dataset."
         )
-    elif submission.track == "low_resource" and submission.num_samples > BENCHMARK_TRACKS["low_resource"]:
+    elif (
+        submission.track == "low_resource"
+        and submission.num_samples > BENCHMARK_TRACKS["low_resource"]
+    ):
         errors.append(
             f"Submission declares track='low_resource' but num_samples "
             f"({submission.num_samples:,}) exceeds the low_resource cap "
@@ -395,11 +394,13 @@ def print_submission_summary(submission: Submission) -> None:
     print(f"  Timestamp:     {submission.timestamp}")
     print()
     print(f"  {'Task':<20} {'Baseline':>10} {'SDG Score':>10} {'Delta':>10}")
-    print(f"  {'-'*20} {'-'*10} {'-'*10} {'-'*10}")
+    print(f"  {'-' * 20} {'-' * 10} {'-' * 10} {'-' * 10}")
     for task in Task:
         result = submission.task_results.get(task.value)
         if result:
-            base_str = f"{result.baseline_score:.4f}" if result.baseline_score is not None else "  N/A  "
+            base_str = (
+                f"{result.baseline_score:.4f}" if result.baseline_score is not None else "  N/A  "
+            )
             delta_str = f"{result.delta:+.4f}" if result.delta is not None else "  N/A  "
             print(f"  {task.value:<20} {base_str:>10} {result.sdg_score:>10.4f} {delta_str:>10}")
         else:
