@@ -1,6 +1,6 @@
 # SDG4LLM-Bench
 
-A standardized benchmark for comparing synthetic data generation (SDG) methods for LLM training. Everything is fixed — the student model, tasks, seed data, hyperparameters, and evaluation — so the **only variable is the SDG method**.
+A standardized benchmark for comparing synthetic data generation (SDG) methods for LLM training. Everything is fixed — the student model, tasks, seed data, hyperparameters, and evaluation — so the **only variables are the SDG method/harness and the teacher model**.
 
 ---
 
